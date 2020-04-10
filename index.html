@@ -18,12 +18,14 @@
 	<script>
 		$(document).ready( function () {
             $('#l').DataTable({
+                "searchDelay": 100,
+                "iDisplayLength": 100,
+                "aLengthMenu": [[100, 250, 500, 1000, -1], [100, 250, 500, 1000, "所有"]],
                 "ajax": {
                     url: "./build-log.json",
                     dataSrc:""
                 },
                 "order": [[5, "desc"]],
-                "paging": false,
                 "columnDefs":[
                     {
                         targets:0,
