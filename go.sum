@@ -1,5 +1,9 @@
 github.com/buildkite/terminal-to-html v0.0.0-20191021015644-afc4eb3a7c70 h1://xB7mzIPX/WlIWYB/68vM+SgIzhIzqeRcqFVqWqVIs=
 github.com/buildkite/terminal-to-html v0.0.0-20191021015644-afc4eb3a7c70/go.mod h1:zlNecTGS2HcaI/thpwN0yNA7vsrpb7+ymnaB2QOiazw=
+github.com/buildkite/terminal-to-html v0.3.5 h1:9Tq19zr0WMiTaWtz5wIfXEimZJbU/4t8NVXLe5on9F4=
+github.com/buildkite/terminal-to-html v0.3.5/go.mod h1:BFFdFecOxCgjdcarqI+8izs6v85CU/1RA/4Bqh4GR7E=
+github.com/buildkite/terminal-to-html v1.0.2 h1:C/c6TcIGDM9+rqN08pfWSwzi28KqSdRxlFXcz6qwelc=
+github.com/buildkite/terminal-to-html v2.0.0+incompatible h1:jgFFHjzQNSJlPVpJlINXSAjY/+qZZfiRcKWvOySjpP8=
 github.com/codegangsta/cli v1.5.0/go.mod h1:/qJNoX69yVSKu5o4jLyXAENLRyk1uhi7zkbQ3slBdOA=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
