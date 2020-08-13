@@ -188,7 +188,7 @@ func joinLast(s []string) []string {
 }
 
 func main() {
-	maintainers := getMaintainers("/home/imlonghao/archlinuxcn/archlinuxcn")
+	maintainers := getMaintainers("/data/archgitrepo-webhook/archlinuxcn")
 	buildlog := parseBuildLog("/home/lilydjwg/.lilac/build.log")
 	log2html("/home/lilydjwg/.lilac/log", "/home/imlonghao/public_html/log", "/home/imlonghao/.config/log/timestamp")
 	table := Render{}
