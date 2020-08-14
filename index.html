@@ -16,20 +16,6 @@
 	<script src="https://cdn.jsdelivr.net/npm/datatables.net@1.10.20/js/jquery.dataTables.min.js"
 		integrity="sha256-LXQzPhL1IRyKkA7HpCOBi8I+OC8HqzHUYkjK8S+LKTs=" crossorigin="anonymous"></script>
 	<script>
-		function goto(name, ver) {
-			fetch(`https://build.archlinuxcn.org/~imlonghao/log/${name}/`)
-					.then(x => x.text())
-					.then(x => {
-						let logs = []
-						x.split('"').forEach(y => {
-							if (y.length === 28) {
-								logs.push(y)
-							}
-						})
-						logs = logs.reverse()
-						window.open(`https://build.archlinuxcn.org/~imlonghao/log/${name}/${logs[ver]}`)
-					})
-		}
 		$(document).ready( function () {
             $('#l').DataTable({
                 "searchDelay": 100,
@@ -63,7 +49,7 @@
                         render: function(data,type,row,meta){
                             let r = "";
                             data.forEach((d, idx)=>{
-                                r += `<a onclick="goto('${row.name}', '${data.length-idx-1}')">${d}</a>`
+                                r += `<a href=./jump.html#${row.name}/${data.length - idx - 1} target=_blank rel=noopener>${d}</a>`
                             });
                             return r
                         }
