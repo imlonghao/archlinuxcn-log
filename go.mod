@@ -3,6 +3,6 @@ module github.com/imlonghao/archlinuxcn-log
 go 1.14
 
 require (
-	github.com/buildkite/terminal-to-html v0.0.0-20191021015644-afc4eb3a7c70
+	github.com/buildkite/terminal-to-html v3.2.0+incompatible
 	gopkg.in/yaml.v2 v2.3.0
 )
