@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/buildkite/terminal-to-html/v3"
+	"github.com/getsentry/sentry-go"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
@@ -52,11 +53,11 @@ var (
 `
 )
 
-func getMaintainers(path string) map[string][]string {
+func getMaintainers(path string) (map[string][]string, error) {
 	r := make(map[string][]string)
 	packages, err := ioutil.ReadDir(path)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	for _, pkg := range packages {
 		if strings.HasPrefix(pkg.Name(), ".") {
@@ -65,14 +66,12 @@ func getMaintainers(path string) map[string][]string {
 		path := fmt.Sprintf("%s/%s/lilac.yaml", path, pkg.Name())
 		conf, err := ioutil.ReadFile(path)
 		if err != nil {
-			log.Printf("fail to read %s, %v", path, err)
-			continue
+			return nil, err
 		}
 		pkgInfo := Lilac{}
 		err = yaml.Unmarshal(conf, &pkgInfo)
 		if err != nil {
-			log.Printf("fail to unmarshal %s, %v", path, err)
-			continue
+			return nil, err
 		}
 		for _, maintainer := range pkgInfo.Maintainers {
 			if value, ok := r[pkg.Name()]; ok {
@@ -83,14 +82,14 @@ func getMaintainers(path string) map[string][]string {
 			}
 		}
 	}
-	return r
+	return r, nil
 }
 
-func parseBuildLog(path string) map[string]BuildLog {
+func parseBuildLog(path string) (map[string]BuildLog, error) {
 	r := make(map[string]BuildLog)
 	buildLog, err := ioutil.ReadFile(path)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	buildLogSplited := strings.Split(string(buildLog), "\n")
 	for _, line := range buildLogSplited {
@@ -100,8 +99,7 @@ func parseBuildLog(path string) map[string]BuildLog {
 		}
 		during, err := strconv.Atoi(regexResult[0][5])
 		if err != nil {
-			log.Printf("fail to convert time to int %s, %v", regexResult[0][5], err)
-			continue
+			return nil, err
 		}
 		result := "❌"
 		if regexResult[0][4] == "successful" {
@@ -122,26 +120,26 @@ func parseBuildLog(path string) map[string]BuildLog {
 			}
 		}
 	}
-	return r
+	return r, nil
 }
 
-func log2html(src, dst, timestmap string) {
+func log2html(src, dst, timestmap string) error {
 	tsByte, err := ioutil.ReadFile(timestmap)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	ts, err := strconv.Atoi(string(tsByte))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	folders, err := ioutil.ReadDir(src)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	for _, folder := range folders {
 		t, err := time.Parse("2006-01-02T15:04:05", folder.Name())
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		if int(t.Unix()) < ts {
 			continue
@@ -149,11 +147,11 @@ func log2html(src, dst, timestmap string) {
 		ts = int(t.Unix())
 		err = ioutil.WriteFile(timestmap, []byte(strconv.Itoa(ts)), 0644)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		packages, err := ioutil.ReadDir(fmt.Sprintf("%s/%s", src, folder.Name()))
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		for _, p := range packages {
 			pSplit := strings.Split(p.Name(), ".")
@@ -162,22 +160,23 @@ func log2html(src, dst, timestmap string) {
 			if err != nil {
 				err := os.Mkdir(fmt.Sprintf("%s/%s", dst, pName), 0755)
 				if err != nil {
-					log.Fatal(err)
+					return err
 				}
 			}
 			input, err := ioutil.ReadFile(fmt.Sprintf("%s/%s/%s", src, folder.Name(), p.Name()))
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			rendered := terminal.Render(input)
 			rendered = bytes.Replace([]byte(PreviewTemplate), []byte("CONTENT"), rendered, 1)
 			rendered = bytes.Replace(rendered, []byte("STYLESHEET"), MustAsset("assets/terminal.css"), 1)
 			err = ioutil.WriteFile(fmt.Sprintf("%s/%s/%s.html", dst, pName, folder.Name()), rendered, 0644)
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 		}
 	}
+	return nil
 }
 
 func joinLast(s []string) []string {
@@ -188,9 +187,30 @@ func joinLast(s []string) []string {
 }
 
 func main() {
-	maintainers := getMaintainers("/data/archgitrepo-webhook/archlinuxcn")
-	buildlog := parseBuildLog("/home/lilydjwg/.lilac/build.log")
-	log2html("/home/lilydjwg/.lilac/log", "/home/imlonghao/public_html/log", "/home/imlonghao/.config/log/timestamp")
+	err := sentry.Init(sentry.ClientOptions{
+		Dsn:     os.Getenv("DSN"),
+		Release: os.Getenv("COMMIT"),
+	})
+	if err != nil {
+		log.Fatalf("sentry.Init: %s", err)
+	}
+	defer sentry.Flush(time.Second * 2)
+
+	maintainers, err := getMaintainers("/data/archgitrepo-webhook/archlinuxcn")
+	if err != nil {
+		sentry.CaptureException(err)
+		return
+	}
+	buildlog, err := parseBuildLog("/home/lilydjwg/.lilac/build.log")
+	if err != nil {
+		sentry.CaptureException(err)
+		return
+	}
+	err = log2html("/home/lilydjwg/.lilac/log", "/home/imlonghao/public_html/log", "/home/imlonghao/.config/log/timestamp")
+	if err != nil {
+		sentry.CaptureException(err)
+		return
+	}
 	table := Render{}
 	for k, v := range buildlog {
 		if len(maintainers[k]) == 0 {
@@ -210,10 +230,12 @@ func main() {
 	}
 	marshal, err := json.Marshal(table)
 	if err != nil {
-		log.Fatal(err)
+		sentry.CaptureException(err)
+		return
 	}
 	err = ioutil.WriteFile("/home/imlonghao/public_html/build-log.json", marshal, 0644)
 	if err != nil {
-		log.Fatal(err)
+		sentry.CaptureException(err)
+		return
 	}
 }
