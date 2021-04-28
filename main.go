@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/buildkite/terminal-to-html"
+	"github.com/buildkite/terminal-to-html/v3"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
