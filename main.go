@@ -63,6 +63,10 @@ func getMaintainers(path string) (map[string][]string, error) {
 		if strings.HasPrefix(pkg.Name(), ".") {
 			continue
 		}
+		// 2021-08-22 Skip if file
+		if !pkg.IsDir() {
+			continue
+		}
 		path := fmt.Sprintf("%s/%s/lilac.yaml", path, pkg.Name())
 		conf, err := ioutil.ReadFile(path)
 		if err != nil {
