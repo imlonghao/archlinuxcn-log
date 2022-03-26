@@ -4,6 +4,6 @@ go 1.14
 
 require (
 	github.com/buildkite/terminal-to-html/v3 v3.6.1
-	github.com/getsentry/sentry-go v0.11.0
+	github.com/getsentry/sentry-go v0.13.0
 	gopkg.in/yaml.v2 v2.4.0
 )
