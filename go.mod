@@ -1,6 +1,6 @@
 module github.com/imlonghao/archlinuxcn-log
 
-go 1.14
+go 1.19
 
 require (
 	github.com/buildkite/terminal-to-html/v3 v3.6.1
